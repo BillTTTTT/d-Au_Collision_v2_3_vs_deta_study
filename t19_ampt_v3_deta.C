@@ -72,6 +72,10 @@ vector<float> v3bins;
 TH1F* v2;
 TH1F* v3;
 
+TProfile* t2;
+TProfile* t3;
+
+/*
 void plot()
 {
     for(int i=0; i<nob; i++)
@@ -118,6 +122,7 @@ void calculatev3()
         v3 = 0;
     }
 }
+*/
 
 void processEvent()
 {
@@ -196,6 +201,7 @@ void processEvent()
             if(i==j) continue;
 
             float deta;
+            float dphi;
             int   index;
 
             //Calculate the pseudo-rapidity gap
@@ -204,8 +210,11 @@ void processEvent()
             //Get rad of deta>2
             if(deta>2) continue;
 
-            index = deta / (2.0 / nob);
+            dphi = particles[i].phi - particles[j].phi;
 
+            //index = deta / (2.0 / nob);
+
+            /*
             if(particles[i].mark == 0)
             {
                 particles[i].mark = 1;
@@ -217,6 +226,10 @@ void processEvent()
                 particles[j].mark = 1;
                 etabins[index].push_back(particles[j]);
             }
+            */
+
+            t2->Fill(deta,TMath::Cos(2 * dphi));
+            t3->Fill(deta,TMath::Cos(3 * dphi));
         }
     }
 
@@ -224,102 +237,114 @@ void processEvent()
 
 void parseampt()
 {
-	//Read in data file
-  	ifstream dataFile;
-  	dataFile.open("ampt_200GeV_1K.dat");
-
-  	//Print some comment as the file is/isn't successfully opened
-  	if (!dataFile)
-  	{
-  		printf("Input file does not exist!\n");
-  		return;
-    }
-    else
+    for(int i=0; i<5; i++)
     {
-    	cout << "--> Successfully opened file! " << endl << endl;
-    }
+    	//Read in data file
+      	ifstream dataFile;
+      	dataFile.open(Form("/Users/air/Desktop/Lab/d-Au_Collision_v2_3_vs_deta_study/10K_Data/ampt_%i.dat",i));
 
-    //In this while loop, program will read the data file line by line
-    while(dataFile)
-    {
-    	int    evtnumber;
-    	int    testnum;
-        int    nlist;
-    	double impactpar;
-    	int    npartproj;
-    	int    nparttarg;
-    	int    npartprojelas;
-    	int    npartprojinelas;
-    	int    nparttargelas;
-    	int    nparttarginelas;
-    	double junk;
+      	//Print some comment as the file is/isn't successfully opened
+      	if (!dataFile)
+      	{
+      		printf(Form("--> File %i does not exist\n",i+1));
+      		return;
+        }
+        else
+        {
+        	cout << Form("--> Successfully opened file number %i\n",i+1) << endl << endl;
+        }
 
-    	//Get the header of each event
-    	dataFile >> evtnumber >> testnum >> nlist >> impactpar >> npartproj >> nparttarg >> npartprojelas >> npartprojinelas >> nparttargelas >> nparttarginelas >> junk;
+        //In this while loop, program will read the data file line by line
+        while(dataFile)
+        {
+        	int    evtnumber;
+        	int    testnum;
+            int    nlist;
+        	double impactpar;
+        	int    npartproj;
+        	int    nparttarg;
+        	int    npartprojelas;
+        	int    npartprojinelas;
+        	int    nparttargelas;
+        	int    nparttarginelas;
+        	double junk;
 
-    	if (!dataFile) break;
+        	//Get the header of each event
+        	dataFile >> evtnumber >> testnum >> nlist >> impactpar >> npartproj >> nparttarg >> npartprojelas >> npartprojinelas >> nparttargelas >> nparttarginelas >> junk;
 
-    	//Analysis each particle in the event
-    	for (int i=0; i<nlist; i++)
-    	{
-    		int partid;
-    		float pv[3];
-    		float mass;
-    		double space[4];
+        	if (!dataFile) break;
 
-    		dataFile >> partid >> pv[0] >> pv[1] >> pv[2] >> mass >> space[0] >> space[1] >> space[2] >> space[3];
+        	//Analysis each particle in the event
+        	for (int i=0; i<nlist; i++)
+        	{
+        		int partid;
+        		float pv[3];
+        		float mass;
+        		double space[4];
 
-    		//Skip non-charged particles that we are not interested in
-			//+-211 are pions,  +-321 are kaons, +-2212 are protons
-            if(abs(partid) != 211 && abs(partid) != 321 && abs(partid) != 2212) continue;
+        		dataFile >> partid >> pv[0] >> pv[1] >> pv[2] >> mass >> space[0] >> space[1] >> space[2] >> space[3];
 
-            if(pv[2] > 99.9) continue;
+        		//Skip non-charged particles that we are not interested in
+    			//+-211 are pions,  +-321 are kaons, +-2212 are protons
+                if(abs(partid) != 211 && abs(partid) != 321 && abs(partid) != 2212) continue;
 
-            //Calculate the energy
-            float energy = TMath::Sqrt(pv[0]*pv[0] + pv[1]*pv[1] + pv[2]*pv[2]);
+                if(pv[2] > 99.9) continue;
 
-            //Make Lorentz vector
-            TLorentzVector ev(pv[0], pv[1], pv[2], energy);
+                //Calculate the energy
+                float energy = TMath::Sqrt(pv[0]*pv[0] + pv[1]*pv[1] + pv[2]*pv[2]);
 
-            //Get pT, phi, pseudorapidity, particle id, px, py, and pz. Store them into p.
-    		particle p;
+                float pt = TMath::Sqrt(pv[0]*pv[0] + pv[1]*pv[1]);
 
-    		p.eta = ev.Eta();
-    		p.pT  = ev.Pt();
-    		p.phi = ev.Phi();
-    		p.px  = pv[0];
-    		p.py  = pv[1];
-    		p.pz  = pv[2];
-    		p.x   = space[0];
-    		p.y   = space[1];
-    		p.z   = space[2];
-            p.mark= 0;
+                if(pt==0) continue;
 
-            if(p.pT == 0) continue;
+                //Make Lorentz vector
+                TLorentzVector ev(pv[0], pv[1], pv[2], 0);
 
-    		particles.push_back(p);
-    	}
+                //Get pT, phi, pseudorapidity, particle id, px, py, and pz. Store them into p.
+        		particle p;
 
-    	processEvent();
-    	particles.clear();
+        		p.eta = ev.Eta();
+        		p.pT  = pt;
+        		p.phi = ev.Phi();
+        		p.px  = pv[0];
+        		p.py  = pv[1];
+        		p.pz  = pv[2];
+        		p.x   = space[0];
+        		p.y   = space[1];
+        		p.z   = space[2];
+                p.mark= 0;
 
-        if (!dataFile) break;
+                //if(p.pT == 0) continue;
+                if(p.pT < 0.2) continue;
+
+        		particles.push_back(p);
+        	}
+
+        	processEvent();
+        	particles.clear();
+
+            if (!dataFile) break;
+        }
     }
 }
 
 void t19_ampt_v3_deta()
 {
-    v2 = new TH1F("v2", "v2 vs. eta gap", nob, -0.01, 1.99);
-    v3 = new TH1F("v3", "v3 vs. eta gap", nob, -0.01, 1.99);
+    t2 = new TProfile("t2","t2",100,-0.01,1.99,-1,+1);
+    t3 = new TProfile("t3","t3",100,-0.01,1.99,-1,+1);
+    //v2 = new TH1F("v2", "v2 vs. eta gap", nob, -0.01, 1.99);
+    //v3 = new TH1F("v3", "v3 vs. eta gap", nob, -0.01, 1.99);
     parseampt();
-    calculatev2();
-    calculatev3();
-    plot();
+    //calculatev2();
+    //calculatev3();
+    //plot();
 
     TCanvas *c1 = new TCanvas("c1","v2",700,600);
-    v2->Draw();
+    t2->SetMarkerStyle(24);
+    t2->Draw("p,e");
     TCanvas *c2 = new TCanvas("c2","v3",700,600);
-    v3->Draw();
+    t3->SetMarkerStyle(24);
+    t3->Draw("p,e");
 }
 
 
