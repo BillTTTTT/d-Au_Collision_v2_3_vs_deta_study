@@ -58,71 +58,16 @@ struct particle
 // --> p+Pb = 209
 const int NUCL = 199;
 
-//Number of bins in histogram
-const int nob = 100;
-
 vector<particle> particles;
 int n = 0;
-
-vector<particle> etabins[nob];
 
 vector<float> v2bins;
 vector<float> v3bins;
 
-TH1F* v2;
-TH1F* v3;
-
 TProfile* t2;
 TProfile* t3;
-
-/*
-void plot()
-{
-    for(int i=0; i<nob; i++)
-    {
-        v2->SetBinContent(i+1,v2bins[i]);
-        v3->SetBinContent(i+1,v3bins[i]);
-    }
-}
-
-void calculatev2()
-{
-    float v2 = 0;
-    for(unsigned int i=0; i<nob; i++)
-    {
-        if(etabins[i].size()==0)
-        {
-            v2bins.push_back(0);
-            continue;
-        }
-
-        for(unsigned int j=0; j<etabins[i].size(); j++)
-        {
-            v2 = v2 + TMath::Cos(2*(etabins[i][j].phi * etabins[i][j].psi2));
-        }
-
-        v2 = float(v2) / float(etabins[i].size());
-        v2bins.push_back(v2);
-        v2 = 0;
-    }
-}
-
-void calculatev3()
-{
-    float v3 = 0;
-    for(unsigned int i=0; i<nob; i++)
-    {
-        for(unsigned int j=0; j<etabins[i].size(); j++)
-        {
-            v3 = v3 + TMath::Cos(3*(etabins[i][j].phi * etabins[i][j].psi3));
-        }
-
-        v3 = float(v3) / float(etabins[i].size());
-        v3bins.push_back(v3);
-        v3 = 0;
-    }
-}
-*/
+TProfile* t220;
+TProfile* t320;
 
 void processEvent()
 {
@@ -202,7 +147,6 @@ void processEvent()
 
             float deta;
             float dphi;
-            int   index;
 
             //Calculate the pseudo-rapidity gap
             deta = abs(particles[i].eta - particles[j].eta);
@@ -212,24 +156,10 @@ void processEvent()
 
             dphi = particles[i].phi - particles[j].phi;
 
-            //index = deta / (2.0 / nob);
-
-            /*
-            if(particles[i].mark == 0)
-            {
-                particles[i].mark = 1;
-                etabins[index].push_back(particles[i]);
-            }
-
-            if(particles[j].mark == 0)
-            {
-                particles[j].mark = 1;
-                etabins[index].push_back(particles[j]);
-            }
-            */
-
             t2->Fill(deta,TMath::Cos(2 * dphi));
             t3->Fill(deta,TMath::Cos(3 * dphi));
+            t220->Fill(deta,TMath::Cos(2 * dphi));
+            t320->Fill(deta,TMath::Cos(3 * dphi));
         }
     }
 
@@ -298,7 +228,7 @@ void parseampt()
                 if(pt==0) continue;
 
                 //Make Lorentz vector
-                TLorentzVector ev(pv[0], pv[1], pv[2], 0);
+                TLorentzVector ev(pv[0], pv[1], pv[2], energy);
 
                 //Get pT, phi, pseudorapidity, particle id, px, py, and pz. Store them into p.
         		particle p;
@@ -315,7 +245,8 @@ void parseampt()
                 p.mark= 0;
 
                 //if(p.pT == 0) continue;
-                if(p.pT < 0.2) continue;
+                if(p.pT <= 0.2) continue;
+                if(abs(p.eta) >= 1) continue;
 
         		particles.push_back(p);
         	}
@@ -332,21 +263,25 @@ void t19_ampt_v3_deta()
 {
     t2 = new TProfile("t2","t2",100,-0.01,1.99,-1,+1);
     t3 = new TProfile("t3","t3",100,-0.01,1.99,-1,+1);
-    //v2 = new TH1F("v2", "v2 vs. eta gap", nob, -0.01, 1.99);
-    //v3 = new TH1F("v3", "v3 vs. eta gap", nob, -0.01, 1.99);
+    t220 = new TProfile("t220","t220",20,-0.01,1.99,-1,+1);
+    t320 = new TProfile("t320","t320",20,-0.01,1.99,-1,+1);
+
     parseampt();
-    //calculatev2();
-    //calculatev3();
-    //plot();
 
     TCanvas *c1 = new TCanvas("c1","v2",700,600);
     t2->SetMarkerStyle(24);
     t2->Draw("p,e");
+    t220->SetMarkerStyle(20);
+    t220->Draw("p,e,same");
     TCanvas *c2 = new TCanvas("c2","v3",700,600);
-    t3->SetMarkerStyle(24);
-    t3->Draw("p,e");
-}
+    t2->SetMarkerStyle(24);
+    t2->Draw("p,e");
+    t320->SetMarkerStyle(20);
+    t320->Draw("p,e,same");
 
+    //c1->Print("v2.pdf");
+    //c2->Print("v3.pdf");
+}
 
 
 
