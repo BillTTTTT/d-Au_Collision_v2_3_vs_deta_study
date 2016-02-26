@@ -34,17 +34,17 @@ using namespace std;
 
 struct particle
 {
-	int   id;
-	float px;
-	float py;
-	float pz;
+    int   id;
+    float px;
+    float py;
+    float pz;
     float x;
     float y;
     float z;
-	float eta;
-	float phi;
-	float pT;
-	float rsquare;
+    float eta;
+    float phi;
+    float pT;
+    float rsquare;
     float psi2;
     float psi3;
 };
@@ -63,17 +63,17 @@ vector<particle> particles;
 int n = 0;
 
 vector<TH1F*> dhis2;
-vector<TH1F*> dhis3;
+//vector<TH1F*> dhis3;
 
 void processEvent()
 {
     if(particles.size() == 0) return;
 
-	//Calculate centroid
-	float cmx=0;
-	float cmy=0;
-	float xsum=0;
-	float ysum=0;
+    //Calculate centroid
+    float cmx=0;
+    float cmy=0;
+    float xsum=0;
+    float ysum=0;
     float avercos2=0;
     float avercos3=0;
     float aversin2=0;
@@ -81,14 +81,14 @@ void processEvent()
     float aver2=0;
 
     //Calculate centroid
-	for (unsigned int i=0; i<particles.size(); i++)
-	{
-		xsum = xsum + particles[i].x;
-		ysum = ysum + particles[i].y;
-	}
+    for (unsigned int i=0; i<particles.size(); i++)
+    {
+        xsum = xsum + particles[i].x;
+        ysum = ysum + particles[i].y;
+    }
 
-	cmx = xsum/particles.size();
-	cmy = ysum/particles.size();
+    cmx = xsum/particles.size();
+    cmy = ysum/particles.size();
 
     //Calculate each useful value of collision particles
     //Store them in vectors
@@ -155,8 +155,8 @@ void processEvent()
 
             index = deta / (2.0 / nob);
 
-            dhis2[index]->Fill(TMath::Cos(2 * dphi));
-            dhis3[index]->Fill(TMath::Cos(3 * dphi));
+            dhis2[index]->Fill(dphi);
+            //dhis3[index]->Fill(TMath::Cos(3 * dphi));
         }
     }
 
@@ -166,53 +166,53 @@ void processEvent()
 {
     for(int i=0; i<1; i++)
     {
-    	//Read in data file
-      	ifstream dataFile;
-      	dataFile.open(Form("/Users/air/Desktop/Lab/d-Au_Collision_v2_3_vs_deta_study/10K_Data/ampt_%i.dat",i));
+        //Read in data file
+        ifstream dataFile;
+        dataFile.open(Form("/Users/air/Desktop/Lab/d-Au_Collision_v2_3_vs_deta_study/10K_Data/ampt_%i.dat",i));
 
-      	//Print some comment as the file is/isn't successfully opened
-      	if (!dataFile)
-      	{
-      		cout << Form("--> File %i does not exist\n",i+1) << endl << endl;
-      		return;
+        //Print some comment as the file is/isn't successfully opened
+        if (!dataFile)
+        {
+            cout << Form("--> File %i does not exist\n",i+1) << endl << endl;
+            return;
         }
         else
         {
-        	cout << Form("--> Successfully opened file number %i\n",i+1) << endl << endl;
+            cout << Form("--> Successfully opened file number %i\n",i+1) << endl << endl;
         }
 
         //In this while loop, program will read the data file line by line
         while(dataFile)
         {
-        	int    evtnumber;
-        	int    testnum;
+            int    evtnumber;
+            int    testnum;
             int    nlist;
-        	double impactpar;
-        	int    npartproj;
-        	int    nparttarg;
-        	int    npartprojelas;
-        	int    npartprojinelas;
-        	int    nparttargelas;
-        	int    nparttarginelas;
-        	double junk;
+            double impactpar;
+            int    npartproj;
+            int    nparttarg;
+            int    npartprojelas;
+            int    npartprojinelas;
+            int    nparttargelas;
+            int    nparttarginelas;
+            double junk;
 
-        	//Get the header of each event
-        	dataFile >> evtnumber >> testnum >> nlist >> impactpar >> npartproj >> nparttarg >> npartprojelas >> npartprojinelas >> nparttargelas >> nparttarginelas >> junk;
+            //Get the header of each event
+            dataFile >> evtnumber >> testnum >> nlist >> impactpar >> npartproj >> nparttarg >> npartprojelas >> npartprojinelas >> nparttargelas >> nparttarginelas >> junk;
 
-        	if (!dataFile) break;
+            if (!dataFile) break;
 
-        	//Analysis each particle in the event
-        	for (int i=0; i<nlist; i++)
-        	{
-        		int partid;
-        		float pv[3];
-        		float mass;
-        		double space[4];
+            //Analysis each particle in the event
+            for (int i=0; i<nlist; i++)
+            {
+                int partid;
+                float pv[3];
+                float mass;
+                double space[4];
 
-        		dataFile >> partid >> pv[0] >> pv[1] >> pv[2] >> mass >> space[0] >> space[1] >> space[2] >> space[3];
+                dataFile >> partid >> pv[0] >> pv[1] >> pv[2] >> mass >> space[0] >> space[1] >> space[2] >> space[3];
 
-        		//Skip non-charged particles that we are not interested in
-    			//+-211 are pions,  +-321 are kaons, +-2212 are protons
+                //Skip non-charged particles that we are not interested in
+                //+-211 are pions,  +-321 are kaons, +-2212 are protons
                 if(abs(partid) != 211 && abs(partid) != 321 && abs(partid) != 2212) continue;
 
                 if(pv[2] > 99.9) continue;
@@ -228,27 +228,27 @@ void processEvent()
                 TLorentzVector ev(pv[0], pv[1], pv[2], energy);
 
                 //Get pT, phi, pseudorapidity, particle id, px, py, and pz. Store them into p.
-        		particle p;
+                particle p;
 
-        		p.eta = ev.Eta();
-        		p.pT  = pt;
-        		p.phi = ev.Phi();
-        		p.px  = pv[0];
-        		p.py  = pv[1];
-        		p.pz  = pv[2];
-        		p.x   = space[0];
-        		p.y   = space[1];
-        		p.z   = space[2];
+                p.eta = ev.Eta();
+                p.pT  = pt;
+                p.phi = ev.Phi();
+                p.px  = pv[0];
+                p.py  = pv[1];
+                p.pz  = pv[2];
+                p.x   = space[0];
+                p.y   = space[1];
+                p.z   = space[2];
 
                 //if(p.pT == 0) continue;
                 if(p.pT <= 0.2) continue;
                 if(abs(p.eta) >= 1) continue;
 
-        		particles.push_back(p);
-        	}
+                particles.push_back(p);
+            }
 
-        	processEvent();
-        	particles.clear();
+            processEvent();
+            particles.clear();
 
             if (!dataFile) break;
         }
@@ -259,27 +259,37 @@ void t21_distribution_20bins()
 {
     for(int i=0; i<20; i++)
     {
-    	dhis2.push_back(new TH1F(Form("d_%i",i),  Form("v2: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -1, 1));
-    	dhis3.push_back(new TH1F(Form("d_%i",i),  Form("v3: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -1, 1));
+        dhis2.push_back(new TH1F(Form("d_%i",i),  Form("v2: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -TMath::Pi(), TMath::Pi()));
+        //dhis3.push_back(new TH1F(Form("d_%i",i),  Form("v3: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -1, 1));
     }
 
     parseampt();
     
-    TCanvas *c1 = new TCanvas("c1","c1",1000,800);
+    TCanvas *c1 = new TCanvas("c1","c1",2000,1600);
     c1->Divide(5,4);
     for(int i=0; i<20; i++)
     {
-    	c1->cd(i+1);
-    	dhis2[i]->Draw();
+        c1->cd(i+1);
+        dhis2[i]->Draw();
+        gStyle->SetOptTitle(0);
+        gStyle->SetOptStat(0);
+        gStyle->SetOptFit(111);
+        dhis2[i]->SetXTitle("dphi");
     }
+
     
-    TCanvas *c2 = new TCanvas("c2","c2",1000,800);
+    /*
+    TCanvas *c2 = new TCanvas("c2","c2",2000,1600);
     c2->Divide(5,4);
     for(int i=0; i<20; i++)
     {
-    	c2->cd(i+1);
-    	dhis3[i]->Draw();
+        c2->cd(i+1);
+        dhis3[i]->Draw();
     }
+    */
+
+    c1->Print("v2_AMPT_20dis.pdf");
+    //c2->Print("v3_AMPT_20dis.pdf");
 }
 
 
