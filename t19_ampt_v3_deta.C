@@ -60,7 +60,6 @@ struct particle
 const int NUCL = 199;
 
 vector<particle> particles;
-int n = 0;
 
 vector<float> v2bins;
 vector<float> v3bins;
@@ -168,7 +167,7 @@ void processEvent()
 
 void parseampt()
 {
-    for(int i=0; i<2; i++)
+    for(int i=0; i<1; i++)
     {
     	//Read in data file
       	ifstream dataFile;
@@ -262,10 +261,10 @@ void parseampt()
 
 void t19_ampt_v3_deta()
 {
-    t2 = new TProfile("t2","t2",100,-0.01,1.99,-1,+1);
-    t3 = new TProfile("t3","t3",100,-0.01,1.99,-1,+1);
-    t220 = new TProfile("t220","t220",20,-0.01,1.99,-1,+1);
-    t320 = new TProfile("t320","t320",20,-0.01,1.99,-1,+1);
+    t2 = new TProfile("t2","t2",100,-0.01,1.99,-0.004,+0.006);
+    t3 = new TProfile("t3","t3",100,-0.01,1.99,-0.004,+0.006);
+    t220 = new TProfile("t220","t220",20,-0.01,1.99,-0.004,+0.006);
+    t320 = new TProfile("t320","t320",20,-0.01,1.99,-0.004,+0.006);
     TF1 *fit1 = new TF1("fit1","pol0",0,2); 
     TF1 *fit2 = new TF1("fit2","pol0",0,2); 
 
@@ -273,21 +272,21 @@ void t19_ampt_v3_deta()
 
 
     TCanvas *c1 = new TCanvas("c1","v2",700,600);
+    t220->Fit(fit1,"R");
     t2->SetMarkerStyle(24);
     t2->Draw("p,e");
     t220->SetMarkerStyle(20);
     t220->Draw("p,e,same");
-    t220->Fit(fit1,"R");
 
     TCanvas *c2 = new TCanvas("c2","v3",700,600);
-    t2->SetMarkerStyle(24);
-    t2->Draw("p,e");
+    t320->Fit(fit2,"R");
+    t3->SetMarkerStyle(24);
+    t3->Draw("p,e");
     t320->SetMarkerStyle(20);
     t320->Draw("p,e,same");
-    t320->Fit(fit2,"R");
 
-    //c1->Print("v2.pdf");
-    //c2->Print("v3.pdf");
+    c1->Print("v2.pdf");
+    c2->Print("v3.pdf");
 }
 
 
