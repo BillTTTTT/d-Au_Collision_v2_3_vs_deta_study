@@ -137,9 +137,9 @@ void processEvent()
     //Calculate the pseudo-rapidity gap and store particles into right bin
     for(unsigned int i=0; i<particles.size(); i++)
     {
-        for(unsigned int j=1; j<particles.size(); j++)
+        for(unsigned int j=0; j<particles.size(); j++)
         {
-            if(i==j) continue;
+            if(i<=j) continue;
 
             float deta;
             float dphi;
@@ -153,6 +153,16 @@ void processEvent()
 
             dphi = particles[i].phi - particles[j].phi;
 
+            if(dphi > TMath::Pi())
+            {
+                dphi = dphi - 2 * TMath::Pi();
+            }
+
+            if(dphi < -TMath::Pi())
+            {
+                dphi = dphi + 2 * TMath::Pi();
+            }
+
             index = deta / (2.0 / nob);
 
             dhis2[index]->Fill(dphi);
@@ -164,7 +174,7 @@ void processEvent()
 
  void parseampt()
 {
-    for(int i=0; i<1; i++)
+    for(int i=0; i<5; i++)
     {
         //Read in data file
         ifstream dataFile;
