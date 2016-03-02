@@ -143,7 +143,7 @@ void processEvent()
     {
         for(unsigned int j=1; j<particles.size(); j++)
         {
-            if(i==j) continue;
+            if(i>=j) continue;
 
             float deta;
             float dphi;
@@ -155,6 +155,16 @@ void processEvent()
             if(deta>2) continue;
 
             dphi = particles[i].phi - particles[j].phi;
+
+            if(dphi > TMath::Pi())
+            {
+                dphi = dphi - 2 * TMath::Pi();
+            }
+
+            if(dphi < -TMath::Pi())
+            {
+                dphi = dphi + 2 * TMath::Pi();
+            }
 
             t2->Fill(deta,TMath::Cos(2 * dphi));
             t3->Fill(deta,TMath::Cos(3 * dphi));
