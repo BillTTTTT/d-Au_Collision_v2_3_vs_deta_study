@@ -16,6 +16,7 @@
 #include <iterator>
 #include <cmath>
 #include <TLegend.h>
+#include <TLatex.h>
 
 #include "TLorentzVector.h"
 #include "TFile.h"
@@ -63,7 +64,19 @@ vector<particle> particles;
 int n = 0;
 
 vector<TH1F*> dhis2;
-//vector<TH1F*> dhis3;
+
+int   ct[20];
+float v12[20];
+float v22[20];
+float v32[30];
+
+void calvs(int index, float dphi)
+{
+    v12[index] = v12[index] + TMath::Cos(1 * dphi);
+    v22[index] = v22[index] + TMath::Cos(2 * dphi);
+    v32[index] = v32[index] + TMath::Cos(3 * dphi);
+    ct[index]++;
+}
 
 void processEvent()
 {
@@ -153,20 +166,21 @@ void processEvent()
 
             dphi = particles[i].phi - particles[j].phi;
 
-            if(dphi > TMath::Pi())
+            if(dphi > 1.5*TMath::Pi())
             {
                 dphi = dphi - 2 * TMath::Pi();
             }
 
-            if(dphi < -TMath::Pi())
+            if(dphi < -0.5*TMath::Pi())
             {
                 dphi = dphi + 2 * TMath::Pi();
             }
 
             index = deta / (2.0 / nob);
 
+            calvs(index, dphi);
+
             dhis2[index]->Fill(dphi);
-            //dhis3[index]->Fill(TMath::Cos(3 * dphi));
         }
     }
 
@@ -269,37 +283,57 @@ void t21_distribution_20bins()
 {
     for(int i=0; i<20; i++)
     {
-        dhis2.push_back(new TH1F(Form("d_%i",i),  Form("v2: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -TMath::Pi(), TMath::Pi()));
-        //dhis3.push_back(new TH1F(Form("d_%i",i),  Form("v3: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -1, 1));
+        dhis2.push_back(new TH1F(Form("d_%i",i),  Form("v2: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -0.5*TMath::Pi(), 1.5*TMath::Pi()));
     }
 
     parseampt();
     
     TCanvas *c1 = new TCanvas("c1","c1",2000,1600);
     c1->Divide(5,4);
+
+    TLatex latex;
+
     for(int i=0; i<20; i++)
     {
+        v12[i] = v12[i] / ct[i];
+        char strv12[10];
+        sprintf(strv12, "%f", v12[i]);
+        v22[i] = v22[i] / ct[i];
+        char strv22[10];
+        sprintf(strv22, "%f", v22[i]);
+        v32[i] = v32[i] / ct[i];
+        char strv32[10];
+        sprintf(strv32, "%f", v32[i]);
+
+        int markx = i%5;
+        int marky = i/5;
+        float x1 = 0.040 + 0.2 * markx;
+        float x2 = 0.075 + 0.2 * markx;
+        float y1 = 0.95 - 0.25 * marky;
+        float y2 = 0.94 - 0.25 * marky;
+        float y3 = 0.93 - 0.25 * marky;
+        
+        latex.SetTextSize(0.01);
+        latex.SetTextAlign(11);
+        latex.DrawLatex(x1, y1,"#LTcos(1#Delta#phi)#GT = ");
+        latex.DrawLatex(x2, y1,strv12);
+        latex.DrawLatex(x1, y2,"#LTcos(2#Delta#phi)#GT = ");
+        latex.DrawLatex(x2, y2,strv22);
+        latex.DrawLatex(x1, y3,"#LTcos(3#Delta#phi)#GT = ");
+        latex.DrawLatex(x2, y3,strv32);
+    }
+
+    for(int i=0; i<20; i++)
+    {   
         c1->cd(i+1);
         dhis2[i]->Draw();
         gStyle->SetOptTitle(0);
         gStyle->SetOptStat(0);
         gStyle->SetOptFit(111);
-        dhis2[i]->SetXTitle("dphi");
+        dhis2[i]->SetXTitle("#Delta#phi");
     }
 
-    
-    /*
-    TCanvas *c2 = new TCanvas("c2","c2",2000,1600);
-    c2->Divide(5,4);
-    for(int i=0; i<20; i++)
-    {
-        c2->cd(i+1);
-        dhis3[i]->Draw();
-    }
-    */
-
-    c1->Print("v2_AMPT_20dis.pdf");
-    //c2->Print("v3_AMPT_20dis.pdf");
+    c1->Print("AMPT_20dis.pdf");
 }
 
 
