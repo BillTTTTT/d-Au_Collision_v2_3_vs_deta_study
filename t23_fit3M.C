@@ -1,5 +1,5 @@
 //-----------------------------------------------
-//Code to graph v3 and v2 vs deta
+//Code to graph v1 and v2 vs deta
 //for AMPT Model for d+Au at 200GeV
 //
 //Author: P. Yin
@@ -39,9 +39,9 @@ void t23_fit3M()
 {
     gStyle->SetOptTitle(0);
     gStyle->SetOptStat(0);
-    gStyle->SetOptFit(111);
+    //gStyle->SetOptFit(111);
 
-	TFile *fin = new TFile("ampt_analysis_20GeV_off.root");
+	TFile *fin = new TFile("d+Au_off_20GeV.root");
 
 	//Define 20 histograms
     for(int i=0; i<nog; i++)
@@ -172,7 +172,7 @@ void t23_fit3M()
         leg->Draw("same");
     }
 	
-    c1->Print("ampt_analysis_20GeV_off.pdf");
+    c1->Print("d+Au_off_20GeV.pdf");
 
 }
 
