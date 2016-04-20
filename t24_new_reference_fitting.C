@@ -58,16 +58,17 @@ struct particle
 // --> p+Pb = 209
 const int NUCL = 199;
 
-const int nog = 4;
-
 vector<particle> particles;
+vector<particle> pab;
+vector<particle> pbc;
+vector<particle> pac;
 vector<particle> p1;
 vector<particle> p2;
 vector<particle> p3;
 vector<particle> p4;
 
-vector<TH1F*> dhiss;
-vector<TH1F*> dhisb;
+TH1F *dhiss;
+TH1F *dhisb;
 TH1F *hcount;
 
 void move()
@@ -107,7 +108,6 @@ void processRealPair()
 
             float deta;
             float dphi;
-            int   index;
 
             //Calculate the pseudo-rapidity gap
             deta = abs(particles[i].eta - particles[j].eta);
@@ -127,9 +127,7 @@ void processRealPair()
                 dphi = dphi + 2 * TMath::Pi();
             }
 
-            index = deta / (2.0 / nog);
-
-            dhiss[index]->Fill(dphi);
+            dhiss->Fill(dphi);
         }
     }
 
@@ -146,7 +144,6 @@ void processMixPair()
         {
             float deta;
             float dphi;
-            int   index;
 
             //Calculate the pseudo-rapidity gap
             deta = abs(p1[i].eta - p2[j].eta);
@@ -166,17 +163,14 @@ void processMixPair()
                 dphi = dphi + 2 * TMath::Pi();
             }
 
-            index = deta / (2.0 / nog);
-
-            dhisb[index]->Fill(dphi);
-            hcount->Fill(index);
+            dhisb->Fill(dphi);
+            hcount->Fill(1);
         }
 
         for(unsigned int j=0; j<p3.size(); j++)
         {
             float deta;
             float dphi;
-            int   index;
 
             //Calculate the pseudo-rapidity gap
             deta = abs(p1[i].eta - p3[j].eta);
@@ -196,17 +190,14 @@ void processMixPair()
                 dphi = dphi + 2 * TMath::Pi();
             }
 
-            index = deta / (2.0 / nog);
-
-            dhisb[index]->Fill(dphi);
-            hcount->Fill(index);
+            dhisb->Fill(dphi);
+            hcount->Fill(1);
         }
 
         for(unsigned int j=0; j<p4.size(); j++)
         {
             float deta;
             float dphi;
-            int   index;
 
             //Calculate the pseudo-rapidity gap
             deta = abs(p1[i].eta - p4[j].eta);
@@ -226,10 +217,8 @@ void processMixPair()
                 dphi = dphi + 2 * TMath::Pi();
             }
 
-            index = deta / (2.0 / nog);
-
-            dhisb[index]->Fill(dphi);
-            hcount->Fill(index);
+            dhisb->Fill(dphi);
+            hcount->Fill(1);
         }
     }
 }
@@ -366,17 +355,8 @@ void processMixPair()
 
 void t24_new_reference_fitting()
 {
-    //Define 4 real pair histograms
-    for(int i=0; i<nog; i++)
-    {
-        dhiss.push_back(new TH1F(Form("s_%i",i),  Form("v2: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -0.5*TMath::Pi(), 1.5*TMath::Pi()));
-    }
-
-    //Define 4 real pair histograms
-    for(int i=0; i<nog; i++)
-    {
-        dhisb.push_back(new TH1F(Form("b_%i",i),  Form("v2: dphi in range of [%f,%f)",i*0.1,(i+1)*0.1), 50, -0.5*TMath::Pi(), 1.5*TMath::Pi()));
-    }
+    dhiss = new TH1F("s", "s", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+    dhisb = new TH1F("b", "b", 50, -0.5*TMath::Pi(), 1.5*TMath::Pi()));
 
     //Define count histgram
     hcount = new TH1F("hcount", "count", 4, 0, 4);
@@ -386,12 +366,8 @@ void t24_new_reference_fitting()
     //Make a file to store outputs
     TFile *fout = new TFile("out.root","RECREATE");
 
-    //Save graphs
-    for(int i=0; i<nog; i++)
-    {   
-        dhiss[i]->Write();
-        dhisb[i]->Write();
-    }
+    dhiss->Write();
+    dhisb->Write();
     hcount->Write();
     fout->Close();
 }
@@ -404,7 +380,22 @@ void t24_new_reference_fitting()
 
 
 
+int functionname() //bool functionname()
+{
+    int a; //float   double
+    int b;
+    char a;
+    char b;
 
+    for(int i=0; i<something; i++)
+    {
+        //...
+
+    }
+
+
+    return something; //return true/false;
+}
 
 
 
